@@ -1,0 +1,17 @@
+.vertex {
+  fill:   #bada55;
+  stroke: #000;
+
+  &.highlight {
+    fill: #f00;
+  }
+}
+
+.edge {
+  stroke: #000;
+
+  &.highlight {
+    stroke: #f00;
+  }
+}
+  

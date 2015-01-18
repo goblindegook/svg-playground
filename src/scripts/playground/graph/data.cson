@@ -1,0 +1,11 @@
+vertices:
+  START: [50, 50]
+  B: [200, 50]
+  C: [50, 200]
+  D: [200, 200]
+  FINISH: [350, 125]
+edges:
+  START: ['B', 'C']
+  B: ['C', 'D', 'FINISH']
+  C: ['D']
+  D: ['FINISH']
