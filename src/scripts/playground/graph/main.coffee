@@ -6,15 +6,7 @@ class SVGGraph
 
   constructor: (@paper, @config) ->
     @start = @finish = undefined
-    @graph = new Graph
-
-    for id, position of @config.vertices
-      @graph.addVertex id, position
-
-    for id, neighbors of @config.edges
-      vertex = @graph.vertices[id]
-      for neighbor in neighbors
-        vertex.connectToVertex @graph.vertices[neighbor]
+    @graph = new Graph config
 
   ###
   Handles vertex dragging movement events.
@@ -36,18 +28,15 @@ class SVGGraph
   ###
   Initializes graph display.
   ###
-  init: ->    
+  init: ->
+    for edge in @graph.edges
+      [x1, y1] = [edge.v1.position[0], edge.v1.position[1]]
+      [x2, y2] = [edge.v2.position[0], edge.v2.position[1]]
+      edge.el  = @paper.line x1, y1, x2, y2
+        .addClass 'edge'
+        .attr strokeWidth: 2
+
     for id, vertex of @graph.vertices
-      [x1, y1] = [vertex.position[0], vertex.position[1]]
-
-      for edge in vertex.edges
-        continue if edge.el
-        neighbor = if edge.v1 is vertex then edge.v2 else edge.v1
-        [x2, y2] = [neighbor.position[0], neighbor.position[1]]
-        edge.el  = @paper.line x1, y1, x2, y2
-          .addClass 'edge'
-          .attr strokeWidth: 2
-
       vertex.el = @paper.circle vertex.position[0], vertex.position[1], 15
         .addClass 'vertex'
         .attr strokeWidth: 2
@@ -68,10 +57,10 @@ class SVGGraph
 
   highlightPath: (path) ->
     for edge in path
-      edge.v1?.el?.addClass 'highlight'
-      edge.v2?.el?.addClass 'highlight'
+      edge.v1.el?.addClass 'highlight'
+      edge.v2.el?.addClass 'highlight'
       edge.el?.addClass 'highlight'
 
 paper = Snap 800, 600
 graph = new SVGGraph paper, config
-graph.init().findShortestPath 'START', 'FINISH'
+graph.init().findShortestPath 'A', 'Z'

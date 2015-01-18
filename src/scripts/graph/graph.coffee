@@ -9,8 +9,16 @@ module.exports = class Graph
   ###
   Graph constructor.
   ###
-  constructor: ->
+  constructor: (config) ->
     @vertices = {}
+    @edges    = []
+
+    for id, position of config.vertices
+      @addVertex id, position
+
+    for id, neighbors of config.edges
+      for neighbor in neighbors
+        @edges.push @vertices[id].connectToVertex @vertices[neighbor]
 
   ###
   Returns the first vertex with id.
@@ -39,37 +47,38 @@ module.exports = class Graph
   findShortestPath: (origin, destination) ->
     queue    = []
     path     = []
+    previous = {} # Previous vertex.
+    distance = {} # Distance to start.
 
-    for index, vertex of @vertices
-      vertex.distance = if vertex is origin then 0 else Infinity
-      vertex.previous = null
+    for id, vertex of @vertices
+      distance[id] = if vertex is origin then 0 else Infinity
+      previous[id] = null
       queue.push vertex
 
     # Sort unvisited nodes by distance:
-    queue.sort (a, b) -> a.distance - b.distance
+    queue.sort (a, b) -> distance[a.id] - distance[b.id]
 
     while queue.length
       nearest = queue.shift()
 
       if destination is nearest
         # Reached destination vertex
-        while nearest.previous
-          edge    = nearest.edgeToNeighborVertex nearest.previous
-          nearest = nearest.previous 
-          path.unshift edge
+        while previous[nearest.id]
+          path.unshift nearest.edgeToNeighborVertex previous[nearest.id]
+          nearest = previous[nearest.id]
         break
 
-      continue if not nearest or nearest.distance is Infinity
+      continue if not nearest or distance[nearest.id] is Infinity
 
       for edge in nearest.edges
-        priority = edge.distance + nearest.distance
+        priority = edge.distance + distance[nearest.id]
         neighbor = if edge.v1 is nearest then edge.v2 else edge.v1
 
-        if priority < neighbor.distance
+        if priority < distance[neighbor.id]
           # Found a shorter path:
-          neighbor.distance = priority
-          neighbor.previous = nearest
+          distance[neighbor.id] = priority
+          previous[neighbor.id] = nearest
           queue.push neighbor
-          queue.sort (a, b) -> a.distance - b.distance
+          queue.sort (a, b) -> distance[a.id] - distance[b.id]
 
     path

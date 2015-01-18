@@ -13,8 +13,6 @@ module.exports = class Vertex
   ###
   constructor: (@id, @position) ->
     @edges    = []        # Connecting edges.
-    @previous = undefined # Previous vertex when calculating shortest path.
-    @distance = 0         # Distance to start when calculating shortest path.
 
   ###
   Determines the Euclidian distance between two vertices.
@@ -22,8 +20,10 @@ module.exports = class Vertex
   @return {Number}        Distance to vertex.
   ###
   distanceToVertex: (vertex) ->
-    reducer = (quadrance, coord, i) -> quadrance + (vertex.position[i] - coord) ** 2
-    Math.sqrt _.reduce @position, reducer, 0
+    quadrance = 0
+    for coordinate, i in vertex.position
+      quadrance = quadrance + (@position[i] - coordinate) ** 2
+    Math.sqrt quadrance
 
   ###
   Connects with another vertex.
@@ -46,7 +46,8 @@ module.exports = class Vertex
 
   ###
   Move vertex to a new position.
+  @param {Number} position... Multiple coordinates.
   ###
-  moveTo: () ->
-    @position = _.map arguments, (arg) -> parseInt arg, 10
+  moveTo: (position...) ->
+    @position = _.map position, (coordinate) -> parseFloat coordinate
     edge.updateDistance() for index, edge of @edges
